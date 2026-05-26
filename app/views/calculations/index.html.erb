@@ -1,0 +1,111 @@
+<% content_for :head do %>
+  <script type="application/ld+json"><%= raw({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Cooked Fiat",
+    "url": request.base_url,
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "description": "Free inflation calculator using US BLS CPI-U data. Convert any dollar amount from one year to another."
+  }.to_json) %></script>
+
+  <script type="application/ld+json"><%= raw({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How is inflation calculated?",
+        "acceptedAnswer": { "@type": "Answer", "text": "We use the Consumer Price Index for All Urban Consumers (CPI-U) published by the U.S. Bureau of Labor Statistics. The conversion is amount × (CPI_end ÷ CPI_start)." }
+      },
+      {
+        "@type": "Question",
+        "name": "What years are supported?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Annual averages from #{CpiCalculator.earliest_year} through #{CpiCalculator.latest_year}." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this data official?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes — it comes directly from the U.S. Bureau of Labor Statistics CPI-U series (CUUR0000SA0)." }
+      }
+    ]
+  }.to_json) %></script>
+<% end %>
+
+<section class="mx-auto grid w-full max-w-7xl gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:py-12">
+  <h1 class="flex flex-col gap-3 font-display text-6xl font-black leading-[0.92] sm:text-7xl lg:text-8xl">
+    <span class="w-fit -rotate-1 bg-[#cc0000] px-4 py-2 text-white shadow-[9px_9px_0_#0a0a0a]">Spending</span>
+    <span class="ml-6 w-fit rotate-1 bg-[#ffd400] px-4 py-2 text-[#0a0a0a] shadow-[9px_9px_0_#0a0a0a] sm:ml-14">$X in <em>year A</em></span>
+    <span class="w-fit -rotate-1 bg-[#1a56db] px-4 py-2 text-white shadow-[9px_9px_0_#0a0a0a]">is like spending</span>
+    <span class="ml-4 w-fit rotate-1 bg-[#0a0a0a] px-4 py-2 text-[#ffd400] shadow-[9px_9px_0_#cc0000] sm:ml-24">$Y in <em>year B</em>.</span>
+  </h1>
+  <p class="max-w-xl border-4 border-[#0a0a0a] bg-white p-5 text-xl font-bold leading-snug shadow-[10px_10px_0_#1a56db] rotate-1">
+    Pick a year, pick an amount. We crunch official BLS Consumer Price Index data
+    and show you what those dollars are really worth today (or any other year you choose).
+  </p>
+</section>
+
+<section class="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8" aria-labelledby="calc-heading">
+  <h2 id="calc-heading" class="sr-only">Inflation calculator</h2>
+
+  <%= form_with url: calculation_path, method: :get, data: { turbo_frame: "result", turbo_action: "advance" }, class: "rounded-none border-4 border-[#0a0a0a] bg-white p-5 shadow-[12px_12px_0_#cc0000] sm:p-8 lg:p-10" do |f| %>
+    <div class="grid gap-5 md:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.65fr)] md:items-end">
+      <div class="flex flex-col gap-2">
+        <%= f.label :amount, "Amount", class: "text-sm font-black uppercase text-[#444]" %>
+        <div class="relative">
+          <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-display text-5xl font-black text-[#cc0000]" aria-hidden="true">$</span>
+          <%= f.number_field :amount, value: @amount || 100, min: 0.01, step: "any", required: true, inputmode: "decimal", autocomplete: "off", class: "w-full border-4 border-[#0a0a0a] bg-[#faf7f2] py-3 pl-12 pr-4 font-display text-5xl font-black leading-none text-[#cc0000] outline-none focus:-translate-x-1 focus:-translate-y-1 focus:shadow-[9px_9px_0_#1a56db]", aria: { label: "Amount in US dollars" } %>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <%= f.label :from_year, "in year", class: "text-sm font-black uppercase text-[#444]" %>
+        <%= f.select :from_year, options_for_select(@year_options.map { |y| [y, y] }, @from_year), {}, class: "w-full border-4 border-[#0a0a0a] bg-[#ffd400] px-4 py-3 font-display text-5xl font-black leading-none text-[#0a0a0a] outline-none focus:-translate-x-1 focus:-translate-y-1 focus:shadow-[9px_9px_0_#1a56db]" %>
+      </div>
+    </div>
+
+    <p class="my-5 font-display text-3xl font-black italic text-[#444]">is like spending&hellip;</p>
+
+    <div class="grid gap-5 md:grid-cols-[minmax(12rem,0.65fr)_1fr] md:items-end">
+      <div class="flex flex-col gap-2">
+        <%= f.label :to_year, "in year", class: "text-sm font-black uppercase text-[#444]" %>
+        <%= f.select :to_year, options_for_select(@year_options.map { |y| [y, y] }, @to_year), {}, class: "w-full border-4 border-[#0a0a0a] bg-[#ffd400] px-4 py-3 font-display text-5xl font-black leading-none text-[#0a0a0a] outline-none focus:-translate-x-1 focus:-translate-y-1 focus:shadow-[9px_9px_0_#1a56db]" %>
+      </div>
+    </div>
+
+    <button type="submit" class="mt-6 border-4 border-[#0a0a0a] bg-[#0a0a0a] px-8 py-4 font-display text-3xl font-black uppercase text-[#ffd400] shadow-[10px_10px_0_#1a56db] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[13px_13px_0_#cc0000] focus:-translate-x-1 focus:-translate-y-1 focus:outline-none focus:shadow-[13px_13px_0_#cc0000] active:translate-x-1 active:translate-y-1 active:shadow-[5px_5px_0_#1a56db]">
+      Calculate
+    </button>
+  <% end %>
+
+  <%= turbo_frame_tag "result", class: "mt-8 block" do %>
+    <%= render "result" %>
+  <% end %>
+</section>
+
+<section class="mx-auto mt-20 max-w-3xl px-5 text-lg font-semibold leading-relaxed text-[#0a0a0a] sm:px-8">
+  <h2 class="mb-4 mt-10 font-display text-4xl font-black text-[#cc0000]">How the Cooked Fiat inflation calculator works</h2>
+  <p class="mt-4">
+    Inflation erodes the value of money over time. A dollar in <%= CpiCalculator.earliest_year %> bought a
+    lot more bread, gasoline, and rent than a dollar today. To compare prices across years
+    fairly, we use the Consumer Price Index — a basket of goods the
+    U.S. Bureau of Labor Statistics has been tracking since 1913.
+  </p>
+  <p class="mt-4">
+    The math is simple:
+    <code class="bg-[#ffd400] px-2 py-1 font-mono text-base font-black">converted = amount × (CPI<sub>target</sub> ÷ CPI<sub>start</sub>)</code>.
+    We use the annual averages of the CPI-U (All Urban Consumers, series CUUR0000SA0) so the
+    result reflects a typical year, not a single noisy month.
+  </p>
+
+  <h2 class="mb-4 mt-10 font-display text-4xl font-black text-[#cc0000]">Frequently asked questions</h2>
+  <dl>
+    <dt class="mt-5 font-black">What years are supported?</dt>
+    <dd class="mt-2 text-[#444]">Annual averages from <%= CpiCalculator.earliest_year %> through <%= CpiCalculator.latest_year %>.</dd>
+    <dt class="mt-5 font-black">Why do my answers differ slightly from other calculators?</dt>
+    <dd class="mt-2 text-[#444]">Most calculators use annual averages, but a few use specific months (often December or January). We use annual averages — the same approach the BLS recommends for long-horizon comparisons.</dd>
+    <dt class="mt-5 font-black">Where does the data come from?</dt>
+    <dd class="mt-2 text-[#444]">Directly from the U.S. Bureau of Labor Statistics. The dataset bundled with this site is refreshable via a single Rake task that hits the public BLS API.</dd>
+  </dl>
+</section>

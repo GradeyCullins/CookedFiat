@@ -1,0 +1,6 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cooked Fiat">
+  <rect width="512" height="512" fill="#FFD400"/>
+  <rect x="64" y="80" width="384" height="120" fill="#CC0000" transform="rotate(-2 256 140)"/>
+  <rect x="64" y="312" width="384" height="120" fill="#1A56DB" transform="rotate(1.5 256 372)"/>
+  <circle cx="430" cy="256" r="36" fill="#0A0A0A"/>
+</svg>
