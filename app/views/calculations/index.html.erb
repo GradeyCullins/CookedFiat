@@ -22,7 +22,7 @@
       {
         "@type": "Question",
         "name": "What years are supported?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Annual averages from #{CpiCalculator.earliest_year} through #{CpiCalculator.latest_year}." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Annual averages from #{CpiCalculator.earliest_year} through #{CpiCalculator.latest_year}, with the latest published monthly CPI used for the current year when its annual average is not available yet." }
       },
       {
         "@type": "Question",
@@ -102,7 +102,12 @@
   <h2 class="mb-4 mt-10 font-display text-4xl font-black text-[#cc0000]">Frequently asked questions</h2>
   <dl>
     <dt class="mt-5 font-black">What years are supported?</dt>
-    <dd class="mt-2 text-[#444]">Annual averages from <%= CpiCalculator.earliest_year %> through <%= CpiCalculator.latest_year %>.</dd>
+    <dd class="mt-2 text-[#444]">
+      Annual averages from <%= CpiCalculator.earliest_year %> through <%= CpiCalculator.latest_year %>.
+      <% if CpiCalculator.provisional_year?(CpiCalculator.latest_year) %>
+        <%= CpiCalculator.provisional_year_note(CpiCalculator.latest_year) %>
+      <% end %>
+    </dd>
     <dt class="mt-5 font-black">Why do my answers differ slightly from other calculators?</dt>
     <dd class="mt-2 text-[#444]">Most calculators use annual averages, but a few use specific months (often December or January). We use annual averages — the same approach the BLS recommends for long-horizon comparisons.</dd>
     <dt class="mt-5 font-black">Where does the data come from?</dt>

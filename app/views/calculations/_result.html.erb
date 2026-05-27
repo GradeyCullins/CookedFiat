@@ -13,6 +13,11 @@
     </p>
     <p class="font-display text-xl font-black italic">in <strong><%= @result.to_year %></strong>.</p>
     <p class="mt-5 text-lg font-black"><%= @result.cumulative_inflation_text %></p>
+    <% [@result.from_year, @result.to_year].uniq.each do |year| %>
+      <% if CpiCalculator.provisional_year?(year) %>
+        <p class="mt-2 text-sm font-bold text-[#444]"><%= CpiCalculator.provisional_year_note(year) %></p>
+      <% end %>
+    <% end %>
     <p class="mt-4 text-sm font-bold">
       <a class="text-[#1a56db] underline decoration-2 underline-offset-4 hover:text-[#cc0000]" href="<%= calculation_path(amount: @result.amount, from_year: @result.from_year, to_year: @result.to_year) %>" data-turbo-frame="_top">Permalink to this calculation</a>
     </p>

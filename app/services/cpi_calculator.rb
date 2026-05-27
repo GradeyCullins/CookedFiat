@@ -41,8 +41,21 @@ class CpiCalculator
         series_name: data["series_name"],
         source: data["source"],
         source_url: data["source_url"],
-        last_updated: data["last_updated"]
+        last_updated: data["last_updated"],
+        provisional_years: provisional_years
       }
+    end
+
+    def provisional_years
+      data.fetch("provisional_years", {})
+    end
+
+    def provisional_year?(year)
+      provisional_years.key?(year.to_s)
+    end
+
+    def provisional_year_note(year)
+      provisional_years.dig(year.to_s, "note")
     end
 
     def convert(amount:, from_year:, to_year:)

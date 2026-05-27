@@ -4,7 +4,14 @@
   "base_period": "1982-84=100",
   "source": "U.S. Bureau of Labor Statistics",
   "source_url": "https://www.bls.gov/cpi/",
-  "last_updated": "2025-01-14",
+  "last_updated": "2026-05-27",
+  "provisional_years": {
+    "2026": {
+      "period": "M04",
+      "period_name": "April",
+      "note": "April CPI is used for 2026 until the annual average is published."
+    }
+  },
   "annual_averages": {
     "1913": 9.9,
     "1914": 10.0,
@@ -117,6 +124,8 @@
     "2021": 270.970,
     "2022": 292.655,
     "2023": 304.702,
-    "2024": 313.689
+    "2024": 313.689,
+    "2025": 321.943,
+    "2026": 333.020
   }
 }
